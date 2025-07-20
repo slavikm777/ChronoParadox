@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Components/ActorComponent.h"
+#include "ChronoParadox/Core/CPCoreTypes.h"
 #include "CPTimeComponent.generated.h"
 
 
@@ -15,6 +16,11 @@ class CHRONOPARADOX_API UCPTimeComponent : public UActorComponent
 public:	
 	UCPTimeComponent();
 
+	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
+
+	UFUNCTION(BlueprintCallable)
+	void ReverseTime(bool Reverse);
+
 protected:
 	virtual void BeginPlay() override;
 	
@@ -24,15 +30,21 @@ protected:
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	int32 _maxRecordingTime = 10;
 
+	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	bool _removeFrame = false;
+	
 	FTimerHandle _timerHandleRecording;
 	bool _isRecording = false;
 	bool _isPlayingRecord = false;
 	int32 _currentFrameIndex = 0;
 	FTimerHandle _timerHandlePlayingRecording;
-	bool _removeFrame = false;
+	TArray<FAnimInfo> _recordFrames;
 
-public:	
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-		
+private:
+	void StartRecord();
+	void FrameRecord();
+	void StopRecord();
+	void StartPlayingRecord();
+	void PlayingRecord();
+	void StopPlayingRecord();
 };
