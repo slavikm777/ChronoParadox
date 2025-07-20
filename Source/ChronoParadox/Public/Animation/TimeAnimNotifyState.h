@@ -4,6 +4,7 @@
 
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
+#include "CPAnimInterface.h"
 #include "TimeAnimNotifyState.generated.h"
 
 UCLASS()
@@ -21,5 +22,5 @@ public:
 
 private:
 	float CurrentTime = 0;
-	UAnimInstance* AnimInstance = nullptr;
+	ICPAnimInterface* IAnimInstance;
 };

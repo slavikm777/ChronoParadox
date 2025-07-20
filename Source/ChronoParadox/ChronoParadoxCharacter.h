@@ -7,6 +7,7 @@
 #include "Logging/LogMacros.h"
 #include "ChronoParadoxCharacter.generated.h"
 
+class UCPTimeComponent;
 class USpringArmComponent;
 class UCameraComponent;
 class UInputMappingContext;
@@ -43,6 +44,9 @@ class AChronoParadoxCharacter : public ACharacter
 	/** Look Input Action */
 	UPROPERTY(EditAnywhere, BlueprintReadOnly, Category = Input, meta = (AllowPrivateAccess = "true"))
 	UInputAction* LookAction;
+
+	UPROPERTY(EditDefaultsOnly, Category = Components, meta = (AllowPrivateAccess = "true"))
+	UCPTimeComponent* RecordingTimeComponent;
 
 public:
 	AChronoParadoxCharacter();

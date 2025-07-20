@@ -1,6 +1,8 @@
 // Copyright Epic Games, Inc. All Rights Reserved.
 
 #include "ChronoParadoxCharacter.h"
+
+#include "CPTimeComponent.h"
 #include "Engine/LocalPlayer.h"
 #include "Camera/CameraComponent.h"
 #include "Components/CapsuleComponent.h"
@@ -50,8 +52,7 @@ AChronoParadoxCharacter::AChronoParadoxCharacter()
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
-	// Note: The skeletal mesh and anim blueprint references on the Mesh component (inherited from Character) 
-	// are set in the derived blueprint asset named ThirdPersonCharacter (to avoid direct content references in C++)
+	RecordingTimeComponent = CreateDefaultSubobject<UCPTimeComponent>(TEXT("RecordingTimeComponent"));
 }
 
 void AChronoParadoxCharacter::BeginPlay()
