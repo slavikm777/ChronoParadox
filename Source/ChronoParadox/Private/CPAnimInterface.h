@@ -6,6 +6,7 @@
 
 class UCPAnimInstance;
 class UAnimSequenceBase;
+struct FAnimInfo;
 
 UINTERFACE(MinimalAPI)
 class UCPAnimInterface : public UInterface
@@ -18,7 +19,8 @@ class ICPAnimInterface
 	GENERATED_BODY()
 
 public:
-	virtual void SetFrame(int32 frame) = 0;
-	virtual void SetSequenceBase(UAnimSequenceBase* InSequence) = 0;
+	virtual void SetAnimInfo(FAnimInfo AnimInfo) = 0;
 	virtual UCPAnimInstance& GetAnimInstance() = 0;
+	virtual void PlayAnim(FAnimInfo AnimInfo) = 0;
+	virtual void ReverseAnim(bool Active) = 0;
 };

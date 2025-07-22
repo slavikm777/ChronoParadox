@@ -3,13 +3,16 @@
 #pragma once
 
 #include "CoreMinimal.h"
+#include "ChronoParadox/ChronoParadoxCharacter.h"
 #include "Components/ActorComponent.h"
 #include "ChronoParadox/Core/CPCoreTypes.h"
+#include "CPTimeParamInterface.h"
+#include "CPAnimInterface.h"
 #include "CPTimeComponent.generated.h"
 
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
-class CHRONOPARADOX_API UCPTimeComponent : public UActorComponent
+class CHRONOPARADOX_API UCPTimeComponent : public UActorComponent, public ICPTimeParamInterface
 {
 	GENERATED_BODY()
 
@@ -23,6 +26,7 @@ public:
 
 protected:
 	virtual void BeginPlay() override;
+	virtual void UpdateAnimation(FAnimInfo NewAnim) override;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	float _recordingFrameInterval = 0.03f;
@@ -38,9 +42,20 @@ protected:
 	bool _isPlayingRecord = false;
 	int32 _currentFrameIndex = 0;
 	FTimerHandle _timerHandlePlayingRecording;
-	TArray<FAnimInfo> _recordFrames;
+	TArray<FFrameInfo> _recordFrames;
+
+	UFUNCTION(BlueprintPure)
+	FAnimInfo& GetCurrentAnimation()
+	{
+		return _currentAnimation;
+	}
 
 private:
+	UPROPERTY()
+	TObjectPtr<AChronoParadoxCharacter> _character = nullptr;
+	ICPAnimInterface *_animInterface = nullptr;
+	FAnimInfo _currentAnimation;
+	
 	void StartRecord();
 	void FrameRecord();
 	void StopRecord();

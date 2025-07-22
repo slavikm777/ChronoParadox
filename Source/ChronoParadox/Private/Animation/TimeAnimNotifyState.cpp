@@ -12,10 +12,6 @@ void UTimeAnimNotifyState::NotifyBegin(USkeletalMeshComponent* MeshComp,UAnimSeq
     Super::NotifyBegin(MeshComp, Animation, TotalDuration, EventReference);
     CurrentTime = 0;
     IAnimInstance = Cast<ICPAnimInterface>(MeshComp->GetAnimInstance());
-    if (IAnimInstance)
-    {
-        IAnimInstance->SetSequenceBase(Animation);
-    }
 }
 
 
@@ -34,7 +30,8 @@ void UTimeAnimNotifyState::NotifyTick(USkeletalMeshComponent* MeshComp, UAnimSeq
         CurrentTime += (FrameDeltaTime / TotalFrame) + FrameDeltaTime;
 
         int32 FrameIndex = CurrentTime * FrameRate.Numerator;
-        IAnimInstance->SetFrame(FrameIndex);
+        bool NewAnim = FrameIndex <= 1;
+        IAnimInstance->SetAnimInfo(FAnimInfo(Animation, NewAnim ? 1.f : FrameIndex / TotalFrame, NewAnim));
     }
 }
 

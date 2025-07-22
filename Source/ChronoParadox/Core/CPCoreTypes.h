@@ -5,23 +5,48 @@
 #include "CoreMinimal.h"
 #include "CPCoreTypes.generated.h"
 
-USTRUCT(BlueprintType)
+USTRUCT(Blueprintable)
 struct FAnimInfo
 {
 	GENERATED_BODY()
-	
+
 	FAnimInfo()
 		: Frame(0)
-		, AnimSequence(nullptr)
+	    , AnimSequence(nullptr)
+	    , NewAnim(true)
+	{}
+
+	FAnimInfo(UAnimSequenceBase *InAnimSequence, float InFrame, bool InNewAnim)
+	{
+		AnimSequence = InAnimSequence;
+		Frame = InFrame;
+		NewAnim = InNewAnim;
+	}
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	UAnimSequenceBase *AnimSequence;
+	
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	float Frame;
+
+	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
+	bool NewAnim;
+};
+
+USTRUCT(BlueprintType)
+struct FFrameInfo
+{
+	GENERATED_BODY()
+	
+	FFrameInfo()
+		: AnimInfo(FAnimInfo())
 		, Location(FVector::ZeroVector)
 		, Rotation(FRotator::ZeroRotator)
 		, Velocity(FVector::ZeroVector)
 	{}
 
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	int32 Frame;
-	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
-	UAnimSequenceBase* AnimSequence;
+	FAnimInfo AnimInfo;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)
 	FVector Location;
 	UPROPERTY(EditDefaultsOnly, BlueprintReadWrite)

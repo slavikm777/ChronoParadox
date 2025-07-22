@@ -5,6 +5,7 @@
 #include "CoreMinimal.h"
 #include "Animation/AnimNotifies/AnimNotifyState.h"
 #include "CPAnimInterface.h"
+#include "ChronoParadox/Core/CPCoreTypes.h"
 #include "TimeAnimNotifyState.generated.h"
 
 UCLASS()

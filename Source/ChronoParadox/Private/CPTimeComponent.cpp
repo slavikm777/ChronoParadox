@@ -2,6 +2,7 @@
 
 
 #include "CPTimeComponent.h"
+#include "GameFramework/CharacterMovementComponent.h"
 
 UCPTimeComponent::UCPTimeComponent()
 {
@@ -12,7 +13,16 @@ UCPTimeComponent::UCPTimeComponent()
 void UCPTimeComponent::BeginPlay()
 {
 	Super::BeginPlay();
+	_character = Cast<AChronoParadoxCharacter>(GetOwner());
+	_animInterface = Cast<ICPAnimInterface>(_character->GetMesh()->GetAnimInstance());
+	check(_character);
+	check(_animInterface);
 	StartRecord();
+}
+
+void UCPTimeComponent::UpdateAnimation(FAnimInfo NewAnim)
+{
+	_currentAnimation = NewAnim;
 }
 
 void UCPTimeComponent::StartRecord()
@@ -24,18 +34,19 @@ void UCPTimeComponent::StartRecord()
 void UCPTimeComponent::FrameRecord()
 {
 	GEngine->AddOnScreenDebugMessage(0, 2, FColor::Red, "Recording");
-	FAnimInfo animInfo;
-	animInfo.Location = GetOwner()->GetActorLocation();
-	animInfo.Rotation = GetOwner()->GetActorRotation();
-	animInfo.Velocity = GetOwner()->GetVelocity();
+	FFrameInfo frameInfo;
+	frameInfo.Location = _character->GetActorLocation();
+	frameInfo.Rotation = _character->GetActorRotation();
+	frameInfo.Velocity = _character->GetVelocity();
+	frameInfo.AnimInfo = _currentAnimation;
 	if (_recordFrames.Num() <= (_maxRecordingTime/_recordingFrameInterval))
 	{
-		_recordFrames.Add(animInfo);
+		_recordFrames.Add(frameInfo);
 	}
 	else
 	{
 		_recordFrames.RemoveAt(0);
-		_recordFrames.Add(animInfo);
+		_recordFrames.Add(frameInfo);
 	}
 }
 
@@ -57,7 +68,9 @@ void UCPTimeComponent::PlayingRecord()
 {
 	if (_currentFrameIndex >= 0)
 	{
-		GetOwner()->SetActorLocationAndRotation(_recordFrames[_currentFrameIndex].Location, _recordFrames[_currentFrameIndex].Rotation);
+		_animInterface->PlayAnim(_recordFrames[_currentFrameIndex].AnimInfo);
+		_character->SetActorLocationAndRotation(_recordFrames[_currentFrameIndex].Location, _recordFrames[_currentFrameIndex].Rotation, true);
+		_character->GetMovementComponent()->Velocity = _recordFrames[_currentFrameIndex].Velocity;
 		if (_removeFrame)
 			_recordFrames.RemoveAt(_currentFrameIndex);
 		_currentFrameIndex--;
@@ -80,11 +93,13 @@ void UCPTimeComponent::ReverseTime(bool Reverse)
 {
 	if (Reverse)
 	{
+		_animInterface->ReverseAnim(true);
 		StopRecord();
 		StartPlayingRecord();
 	}
 	else
 	{
+		_animInterface->ReverseAnim(false);
 		StopPlayingRecord();
 		StartRecord();
 	}
