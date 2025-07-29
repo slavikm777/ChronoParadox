@@ -22,4 +22,6 @@ class ICPTimeParamInterface
 
 public:
 	virtual void UpdateAnimation(FAnimInfo NewAnim) = 0;
+	virtual void ToggleReverse(bool Reverse) = 0;
+	virtual void ToggleStopTime(bool StopTime) = 0;
 };

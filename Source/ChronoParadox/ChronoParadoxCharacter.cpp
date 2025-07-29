@@ -12,6 +12,7 @@
 #include "EnhancedInputComponent.h"
 #include "EnhancedInputSubsystems.h"
 #include "InputActionValue.h"
+#include "Components/CPTimeControlComponent.h"
 
 DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
@@ -20,9 +21,10 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 
 AChronoParadoxCharacter::AChronoParadoxCharacter()
 {
+	PrimaryActorTick.bCanEverTick = true;
 	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-		
+
 	// Don't rotate when the controller rotates. Let that just affect the camera.
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
@@ -49,16 +51,56 @@ AChronoParadoxCharacter::AChronoParadoxCharacter()
 
 	// Create a follow camera
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
-	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName); // Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
+	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
+	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
 	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
 
 	RecordingTimeComponent = CreateDefaultSubobject<UCPTimeComponent>(TEXT("RecordingTimeComponent"));
+	TimeControlComponent = CreateDefaultSubobject<UCPTimeControlComponent>(TEXT("TimeControlComponent"));
 }
 
 void AChronoParadoxCharacter::BeginPlay()
 {
 	// Call the base class  
 	Super::BeginPlay();
+	PrimaryActorTick.SetTickFunctionEnable(false);
+	RecordingTimeComponent->OnToggleReversEvent.AddDynamic(this, &ThisClass::CameraCorrect);
+}
+
+void AChronoParadoxCharacter::Tick(float DeltaTime)
+{
+	Super::Tick(DeltaTime);
+	float InterpSpeed = 2.5f; // Скорость интерполяции
+	FVector CurrentLocation = FMath::VInterpTo(
+		CameraBoom->GetRelativeLocation(), 
+		NewCameraLocation, 
+		DeltaTime, 
+		InterpSpeed
+	);
+	CameraBoom->SetWorldLocation(CurrentLocation);
+}
+
+void AChronoParadoxCharacter::CameraCorrect(bool Active)
+{
+	if (Active)
+	{
+		CameraBoom->DetachFromParent(true, false);
+		GetWorld()->GetTimerManager().SetTimer(TimerCameraLocation, this, &ThisClass::SetCameraLocation, 0.1f, true);
+		NewCameraLocation = GetActorLocation();
+		PrimaryActorTick.SetTickFunctionEnable(true);
+	}
+	else
+	{
+		PrimaryActorTick.SetTickFunctionEnable(false);
+		GetWorld()->GetTimerManager().ClearTimer(TimerCameraLocation);
+		CameraBoom->AttachToComponent(RootComponent, FAttachmentTransformRules::SnapToTargetIncludingScale);
+	}
+}
+
+void AChronoParadoxCharacter::SetCameraLocation()
+{
+	NewCameraLocation = GetActorLocation();
+	//CameraBoom->SetWorldLocation(GetActorLocation());
 }
 
 //////////////////////////////////////////////////////////////////////////
@@ -69,15 +111,16 @@ void AChronoParadoxCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	// Add Input Mapping Context
 	if (APlayerController* PlayerController = Cast<APlayerController>(GetController()))
 	{
-		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
+		if (UEnhancedInputLocalPlayerSubsystem* Subsystem = ULocalPlayer::GetSubsystem<
+			UEnhancedInputLocalPlayerSubsystem>(PlayerController->GetLocalPlayer()))
 		{
 			Subsystem->AddMappingContext(DefaultMappingContext, 0);
 		}
 	}
-	
+
 	// Set up action bindings
-	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent)) {
-		
+	if (UEnhancedInputComponent* EnhancedInputComponent = Cast<UEnhancedInputComponent>(PlayerInputComponent))
+	{
 		// Jumping
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Started, this, &ACharacter::Jump);
 		EnhancedInputComponent->BindAction(JumpAction, ETriggerEvent::Completed, this, &ACharacter::StopJumping);
@@ -90,7 +133,10 @@ void AChronoParadoxCharacter::SetupPlayerInputComponent(UInputComponent* PlayerI
 	}
 	else
 	{
-		UE_LOG(LogTemplateCharacter, Error, TEXT("'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."), *GetNameSafe(this));
+		UE_LOG(LogTemplateCharacter, Error,
+		       TEXT(
+			       "'%s' Failed to find an Enhanced Input component! This template is built to use the Enhanced Input system. If you intend to use the legacy system, then you will need to update this C++ file."
+		       ), *GetNameSafe(this));
 	}
 }
 
@@ -107,7 +153,7 @@ void AChronoParadoxCharacter::Move(const FInputActionValue& Value)
 
 		// get forward vector
 		const FVector ForwardDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::X);
-	
+
 		// get right vector 
 		const FVector RightDirection = FRotationMatrix(YawRotation).GetUnitAxis(EAxis::Y);
 

@@ -10,31 +10,32 @@
 #include "CPAnimInterface.h"
 #include "CPTimeComponent.generated.h"
 
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnToggleReverse, bool, Active);
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CHRONOPARADOX_API UCPTimeComponent : public UActorComponent, public ICPTimeParamInterface
 {
 	GENERATED_BODY()
 
-public:	
+public:
 	UCPTimeComponent();
 
-	virtual void TickComponent(float DeltaTime, ELevelTick TickType, FActorComponentTickFunction* ThisTickFunction) override;
-
-	UFUNCTION(BlueprintCallable)
-	void ReverseTime(bool Reverse);
+	UPROPERTY(BlueprintAssignable, Category="Events")
+	FOnToggleReverse OnToggleReversEvent;
 
 protected:
 	virtual void BeginPlay() override;
 	virtual void UpdateAnimation(FAnimInfo NewAnim) override;
+	virtual void ToggleReverse(bool Reverse) override;
+	virtual void ToggleStopTime(bool StopTime) override;
 	
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
 	float _recordingFrameInterval = 0.03f;
 
 	UPROPERTY(EditDefaultsOnly, Category = "Settings")
-	int32 _maxRecordingTime = 10;
+	int32 _maxRecordingTime = 15;
 
-	UPROPERTY(EditDefaultsOnly, Category = "Settings")
+	UPROPERTY(EditAnywhere, Category = "Settings")
 	bool _removeFrame = false;
 	
 	FTimerHandle _timerHandleRecording;
@@ -55,11 +56,13 @@ private:
 	TObjectPtr<AChronoParadoxCharacter> _character = nullptr;
 	ICPAnimInterface *_animInterface = nullptr;
 	FAnimInfo _currentAnimation;
+	UPROPERTY()
+	TObjectPtr<AActor> _owner;
 	
 	void StartRecord();
 	void FrameRecord();
 	void StopRecord();
-	void StartPlayingRecord();
-	void PlayingRecord();
+	void StartPlayingRecordReverse();
+	void PlayingRecordReverse();
 	void StopPlayingRecord();
 };
