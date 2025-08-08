@@ -16,6 +16,7 @@ void UCPTimeControlComponent::BeginPlay()
 	Super::BeginPlay();
 	CPTimeParamInterface = CPHelperFunctions::GetComponentByInterface<ICPTimeParamInterface>(GetOwner());
 	check(CPTimeParamInterface);
+	CPTimeParamInterface->OnToggleReverse().AddDynamic(this, &ThisClass::ReverseDiactivate);
 }
 
 void UCPTimeControlComponent::MultiSphereTraceByChannel(const FVector StartLocation, const FVector EndLocation,
@@ -77,15 +78,35 @@ void UCPTimeControlComponent::GetAllActorsWithTime(float Radius)
 	}
 }
 
+void UCPTimeControlComponent::ReverseDiactivate(bool Active)
+{
+	if (Active == false && ActorsWithTime.Num()-1 > 0)
+	{
+		for (AActor *Actor : ActorsWithTime)
+		{
+			TimeInterface = CPHelperFunctions::GetComponentByInterface<ICPTimeParamInterface>(Actor);
+			if (TimeInterface)
+				TimeInterface->ToggleReverse(Active);
+		}
+		ActorsWithTime.Empty();
+	}
+}
+
 void UCPTimeControlComponent::TimeReverse(bool Active)
 {
 	CPTimeParamInterface->ToggleReverse(Active);
 	if (Active)
 		GetAllActorsWithTime(1000000.f);
-	for (AActor *Actor : ActorsWithTime)
+	if (ActorsWithTime.Num()-1 > 0)
+		for (AActor *Actor : ActorsWithTime)
 	{
 		TimeInterface = CPHelperFunctions::GetComponentByInterface<ICPTimeParamInterface>(Actor);
 		if (TimeInterface)
 			TimeInterface->ToggleReverse(Active);
 	}
+}
+
+void UCPTimeControlComponent::StartChronoEcho()
+{
+	CPTimeParamInterface->StartChronoEcho();
 }

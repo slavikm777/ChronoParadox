@@ -8,13 +8,15 @@
 
 class UAnimSequenceBase;
 struct FAnimInfo;
+struct FFrameInfo;
+
+DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnToggleReverse, bool, Active);
 
 UINTERFACE(MinimalAPI)
 class UCPTimeParamInterface : public UInterface
 {
 	GENERATED_BODY()
 };
-
 
 class ICPTimeParamInterface
 {
@@ -24,4 +26,7 @@ public:
 	virtual void UpdateAnimation(FAnimInfo NewAnim) = 0;
 	virtual void ToggleReverse(bool Reverse) = 0;
 	virtual void ToggleStopTime(bool StopTime) = 0;
+	virtual void SetFrames(TArray<FFrameInfo> InFrames, int32 CurrentFrameIndex) = 0;
+	virtual void StartChronoEcho() = 0;
+	virtual FOnToggleReverse &OnToggleReverse() = 0;
 };

@@ -22,38 +22,30 @@ DEFINE_LOG_CATEGORY(LogTemplateCharacter);
 AChronoParadoxCharacter::AChronoParadoxCharacter()
 {
 	PrimaryActorTick.bCanEverTick = true;
-	// Set size for collision capsule
 	GetCapsuleComponent()->InitCapsuleSize(42.f, 96.0f);
-
-	// Don't rotate when the controller rotates. Let that just affect the camera.
+	
 	bUseControllerRotationPitch = false;
 	bUseControllerRotationYaw = false;
 	bUseControllerRotationRoll = false;
-
-	// Configure character movement
-	GetCharacterMovement()->bOrientRotationToMovement = true; // Character moves in the direction of input...	
-	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); // ...at this rotation rate
-
-	// Note: For faster iteration times these variables, and many more, can be tweaked in the Character Blueprint
-	// instead of recompiling to adjust them
+	
+	GetCharacterMovement()->bOrientRotationToMovement = true; 
+	GetCharacterMovement()->RotationRate = FRotator(0.0f, 500.0f, 0.0f); 
+	
 	GetCharacterMovement()->JumpZVelocity = 700.f;
 	GetCharacterMovement()->AirControl = 0.35f;
 	GetCharacterMovement()->MaxWalkSpeed = 500.f;
 	GetCharacterMovement()->MinAnalogWalkSpeed = 20.f;
 	GetCharacterMovement()->BrakingDecelerationWalking = 2000.f;
 	GetCharacterMovement()->BrakingDecelerationFalling = 1500.0f;
-
-	// Create a camera boom (pulls in towards the player if there is a collision)
+	
 	CameraBoom = CreateDefaultSubobject<USpringArmComponent>(TEXT("CameraBoom"));
 	CameraBoom->SetupAttachment(RootComponent);
-	CameraBoom->TargetArmLength = 400.0f; // The camera follows at this distance behind the character	
-	CameraBoom->bUsePawnControlRotation = true; // Rotate the arm based on the controller
-
-	// Create a follow camera
+	CameraBoom->TargetArmLength = 400.0f; 	
+	CameraBoom->bUsePawnControlRotation = true; 
+	
 	FollowCamera = CreateDefaultSubobject<UCameraComponent>(TEXT("FollowCamera"));
 	FollowCamera->SetupAttachment(CameraBoom, USpringArmComponent::SocketName);
-	// Attach the camera to the end of the boom and let the boom adjust to match the controller orientation
-	FollowCamera->bUsePawnControlRotation = false; // Camera does not rotate relative to arm
+	FollowCamera->bUsePawnControlRotation = false; 
 
 	RecordingTimeComponent = CreateDefaultSubobject<UCPTimeComponent>(TEXT("RecordingTimeComponent"));
 	TimeControlComponent = CreateDefaultSubobject<UCPTimeControlComponent>(TEXT("TimeControlComponent"));
@@ -61,7 +53,6 @@ AChronoParadoxCharacter::AChronoParadoxCharacter()
 
 void AChronoParadoxCharacter::BeginPlay()
 {
-	// Call the base class  
 	Super::BeginPlay();
 	PrimaryActorTick.SetTickFunctionEnable(false);
 	RecordingTimeComponent->OnToggleReversEvent.AddDynamic(this, &ThisClass::CameraCorrect);
@@ -71,9 +62,7 @@ void AChronoParadoxCharacter::Tick(float DeltaTime)
 {
 	Super::Tick(DeltaTime);
 	float InterpSpeed = 2.5f; // Скорость интерполяции
-	FVector CurrentLocation = FMath::VInterpTo(
-		CameraBoom->GetRelativeLocation(), 
-		NewCameraLocation, 
+	FVector CurrentLocation = FMath::VInterpTo(CameraBoom->GetRelativeLocation(), NewCameraLocation, 
 		DeltaTime, 
 		InterpSpeed
 	);
@@ -100,7 +89,6 @@ void AChronoParadoxCharacter::CameraCorrect(bool Active)
 void AChronoParadoxCharacter::SetCameraLocation()
 {
 	NewCameraLocation = GetActorLocation();
-	//CameraBoom->SetWorldLocation(GetActorLocation());
 }
 
 //////////////////////////////////////////////////////////////////////////

@@ -3,11 +3,9 @@
 #pragma once
 
 #include "CoreMinimal.h"
-#include "CPTimeComponent.h"
 #include "Components/ActorComponent.h"
 #include "CPTimeParamInterface.h"
 #include "CPTimeControlComponent.generated.h"
-
 
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CHRONOPARADOX_API UCPTimeControlComponent : public UActorComponent
@@ -17,8 +15,11 @@ class CHRONOPARADOX_API UCPTimeControlComponent : public UActorComponent
 public:	
 	UCPTimeControlComponent();
 
-	UFUNCTION(BlueprintCallable)
+	UFUNCTION(BlueprintCallable) //Тест
 	void TimeReverse(bool Active);
+
+	UFUNCTION(BlueprintCallable) //Тест
+	void StartChronoEcho();
 
 protected:
 	virtual void BeginPlay() override;
@@ -42,5 +43,7 @@ private:
 	);
 	
 	void GetAllActorsWithTime(float Radius);
-		
+	
+	UFUNCTION()
+	void ReverseDiactivate(bool Active);
 };

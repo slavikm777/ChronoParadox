@@ -10,8 +10,6 @@
 #include "CPAnimInterface.h"
 #include "CPTimeComponent.generated.h"
 
-DECLARE_DYNAMIC_MULTICAST_DELEGATE_OneParam(FOnToggleReverse, bool, Active);
-
 UCLASS( ClassGroup=(Custom), meta=(BlueprintSpawnableComponent) )
 class CHRONOPARADOX_API UCPTimeComponent : public UActorComponent, public ICPTimeParamInterface
 {
@@ -28,36 +26,38 @@ protected:
 	virtual void UpdateAnimation(FAnimInfo NewAnim) override;
 	virtual void ToggleReverse(bool Reverse) override;
 	virtual void ToggleStopTime(bool StopTime) override;
+	virtual void SetFrames(TArray<FFrameInfo> InFrames, int32 CurrentFrameIndex) override;
+	virtual void StartChronoEcho() override;
+	virtual FOnToggleReverse &OnToggleReverse() override;
 	
-	UPROPERTY(EditDefaultsOnly, Category = "Settings")
-	float _recordingFrameInterval = 0.03f;
-
-	UPROPERTY(EditDefaultsOnly, Category = "Settings")
-	int32 _maxRecordingTime = 15;
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	float _recordingFrameInterval = 0.02f;
 
 	UPROPERTY(EditAnywhere, Category = "Settings")
-	bool _removeFrame = false;
-	
-	FTimerHandle _timerHandleRecording;
-	bool _isRecording = false;
-	bool _isPlayingRecord = false;
-	int32 _currentFrameIndex = 0;
-	FTimerHandle _timerHandlePlayingRecording;
-	TArray<FFrameInfo> _recordFrames;
+	int32 _maxRecordingTime = 15;
 
-	UFUNCTION(BlueprintPure)
-	FAnimInfo& GetCurrentAnimation()
-	{
-		return _currentAnimation;
-	}
+	//UPROPERTY(EditAnywhere, Category = "Settings")
+	bool _removeFrame = true;
 
 private:
-	UPROPERTY()
-	TObjectPtr<AChronoParadoxCharacter> _character = nullptr;
+	FTimerHandle _timerHandleRecording;
+	FTimerHandle _timerHandlePlayingRecording;
+	bool _isRecording = false;
+	bool _isPlayingRecord = false;
+	bool _isClone = false;
+	int32 _currentFrameIndex = 0;
+	TArray<FFrameInfo> _recordFrames;
 	ICPAnimInterface *_animInterface = nullptr;
 	FAnimInfo _currentAnimation;
+	
+	UPROPERTY()
+	TObjectPtr<AChronoParadoxCharacter> _character = nullptr;
+	
 	UPROPERTY()
 	TObjectPtr<AActor> _owner;
+	
+	UPROPERTY(EditAnywhere, Category = "Settings")
+	TSubclassOf<class AChronoParadoxCharacter> _characterClass;
 	
 	void StartRecord();
 	void FrameRecord();
@@ -65,4 +65,9 @@ private:
 	void StartPlayingRecordReverse();
 	void PlayingRecordReverse();
 	void StopPlayingRecord();
+	void StartPlayingRecord(int32 FrmeIndex = 0);
+	void PlayingRecord();
+	void RemoveFutureFrames(int32 FrmeIndex);
+	void RemovePastFrames(int32 FrmeIndex);
+	bool SpawnCharacter();
 };

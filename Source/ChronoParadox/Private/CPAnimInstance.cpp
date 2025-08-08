@@ -27,11 +27,16 @@ UCPAnimInstance& UCPAnimInstance::GetAnimInstance()
 
 void UCPAnimInstance::PlayAnim(FAnimInfo AnimInfo)
 {
-	AnimationInfo = AnimInfo;
-	UE_LOG(LogTemp, Warning, TEXT("Anim = %s"), *AnimInfo.AnimSequence->GetName());
+	if (AnimInfo.AnimSequence != nullptr)
+		AnimationInfo = AnimInfo;
 }
 
 void UCPAnimInstance::ReverseAnim(bool Active)
 {
 	_timeReverse = Active;
+}
+
+void UCPAnimInstance::ReplayAnim(bool Active)
+{
+	_timeReplay = Active;
 }

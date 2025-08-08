@@ -23,4 +23,5 @@ public:
 	virtual UCPAnimInstance& GetAnimInstance() = 0;
 	virtual void PlayAnim(FAnimInfo AnimInfo) = 0;
 	virtual void ReverseAnim(bool Active) = 0;
+	virtual void ReplayAnim(bool Active) = 0;
 };

@@ -19,6 +19,9 @@ protected:
 	bool _timeReverse = false;
 
 	UPROPERTY(BlueprintReadOnly)
+	bool _timeReplay = false;
+
+	UPROPERTY(BlueprintReadOnly)
 	FAnimInfo AnimationInfo;
 
 	UPROPERTY(BlueprintReadOnly)
@@ -33,6 +36,7 @@ protected:
 	virtual UCPAnimInstance& GetAnimInstance() override;
 	virtual void PlayAnim(FAnimInfo AnimInfo) override;
 	virtual void ReverseAnim(bool Active) override;
+	virtual void ReplayAnim(bool Active) override;
 
 private:
 	FAnimInfo AnimationInformation;
